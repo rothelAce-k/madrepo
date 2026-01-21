@@ -230,6 +230,32 @@ export function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) 
                                 )
                             })}
                         </ul>
+
+                        {/* BOTTOM HELP SECTION */}
+                        <div className={cn("mt-auto pb-4", collapsed ? "px-2" : "px-0")}>
+                            {!collapsed && <div className="my-2 h-px bg-slate-200 dark:bg-slate-800 mx-2" />}
+                            <Link
+                                to="/help/support"
+                                className={cn(
+                                    "relative group flex items-center gap-x-3 rounded-lg p-2.5 text-sm font-semibold transition-all duration-200",
+                                    collapsed ? "justify-center" : "",
+                                    location.pathname === '/help/support'
+                                        ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
+                                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                                )}
+                            >
+                                <div className="h-5 w-5 shrink-0 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("transition-colors", location.pathname === '/help/support' ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300")}>
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                                        <path d="M12 17h.01" />
+                                    </svg>
+                                </div>
+                                {!collapsed && (
+                                    <span className="truncate">Help & Support</span>
+                                )}
+                            </Link>
+                        </div>
                     </nav>
                 </div>
             </motion.div>

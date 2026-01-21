@@ -13,6 +13,7 @@ import SensorMonitor from './pages/SensorMonitor'
 import HealthMonitor from './pages/HealthMonitor'
 import ModelMetrics from './pages/ModelMetrics' // System Status
 import UserManagement from './pages/UserManagement'
+import HelpSupport from './pages/HelpSupport'
 
 const queryClient = new QueryClient()
 
@@ -35,6 +36,7 @@ function App() {
                                 <Route path="/health/monitor" element={<LayoutWrapper><HealthMonitor /></LayoutWrapper>} />
                                 <Route path="/model/metrics" element={<LayoutWrapper><ModelMetrics /></LayoutWrapper>} />
                                 <Route path="/users" element={<LayoutWrapper><UserManagement /></LayoutWrapper>} />
+                                <Route path="/help/support" element={<LayoutWrapper><HelpSupport /></LayoutWrapper>} />
 
                                 {/* Catch-all redirect to Dashboard */}
                                 <Route path="*" element={<Navigate to="/" replace />} />
