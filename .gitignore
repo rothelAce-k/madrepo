@@ -1,0 +1,30 @@
+
+# Large Data Files
+ml_pipeline/data/features_engineered.csv
+ml_pipeline/results/
+
+# Dependencies
+node_modules/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Environment Variables
+.env
+.env.local
+
+# Build Outputs
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
