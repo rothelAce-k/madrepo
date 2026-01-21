@@ -1212,8 +1212,8 @@ export default function InvestigationReport({ isOpen, onClose, reportData, segme
                                 </div>
                             </div>
 
-                            {/* CREATE WORK ORDER - Only show for Warning/Critical segments */}
-                            {reportData.score < 80 && (
+                            {/* CREATE WORK ORDER - Enabled for all segments */}
+                            {true && (
                                 <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-5 border border-indigo-200 dark:border-indigo-800">
                                     <h4 className="font-bold text-indigo-900 dark:text-indigo-100 mb-4 flex items-center gap-2">
                                         📋 Create Work Order
