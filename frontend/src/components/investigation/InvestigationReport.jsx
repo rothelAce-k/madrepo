@@ -3,6 +3,14 @@ import { X, Download, FileText, AlertTriangle, TrendingDown, Calendar, Activity 
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import jsPDF from 'jspdf';
+import { useSensor } from '../../contexts/SensorContext';
+
+const SEGMENT_LABELS = {
+    'A-B': 'Inlet Section',
+    'B-C': 'Mid Section',
+    'C-D': 'Critical Zone',
+    'D-E': 'Outlet Section'
+};
 
 /**
  * Full Investigation Report Modal
@@ -1030,38 +1038,61 @@ export default function InvestigationReport({ isOpen, onClose, reportData, segme
                             <div className="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700">
                                 <h4 className="font-bold text-slate-900 dark:text-white mb-4">How Does This Segment Compare?</h4>
                                 <div className="space-y-3">
-                                    {[
-                                        { segment: 'A-B', health: 99, label: 'Inlet Section' },
-                                        { segment: 'B-C', health: 97, label: 'Mid Section' },
-                                        { segment: 'C-D', health: 45, label: 'Critical Zone' },
-                                        { segment: 'D-E', health: reportData.score, label: 'Current Segment', highlight: true }
-                                    ].map((seg, idx) => {
-                                        const barColor = seg.health > 80 ? 'bg-emerald-500' : seg.health > 60 ? 'bg-amber-500' : 'bg-rose-500';
+                                    {(() => {
+                                        const { segmentHealth } = useSensor();
+
+                                        // Build a list of all segments with their real health
+                                        const comparisonList = Object.entries(SEGMENT_LABELS).map(([id, label]) => ({
+                                            id,
+                                            health: segmentHealth[id] || 100,
+                                            label: id === segmentId ? 'Current Segment' : label,
+                                            highlight: id === segmentId
+                                        }));
+
+                                        // Calculate rank
+                                        const sorted = [...comparisonList].sort((a, b) => b.health - a.health);
+                                        const rank = sorted.findIndex(s => s.id === segmentId) + 1;
+
+                                        const ordinal = (n) => {
+                                            const s = ["th", "st", "nd", "rd"];
+                                            const v = n % 100;
+                                            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                                        };
+
                                         return (
-                                            <div key={idx} className={`${seg.highlight ? 'bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border-2 border-indigo-300 dark:border-indigo-700' : ''}`}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-sm font-bold ${seg.highlight ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                            Segment {seg.segment}
-                                                        </span>
-                                                        <span className="text-xs text-slate-500 dark:text-slate-400">({seg.label})</span>
-                                                    </div>
-                                                    <span className="text-sm font-bold text-slate-900 dark:text-white">{seg.health.toFixed(1)}%</span>
+                                            <>
+                                                {comparisonList.map((seg, idx) => {
+                                                    const barColor = seg.health > 80 ? 'bg-emerald-500' : seg.health > 60 ? 'bg-amber-500' : 'bg-rose-500';
+                                                    return (
+                                                        <div key={idx} className={`${seg.highlight ? 'bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border-2 border-indigo-300 dark:border-indigo-700' : ''}`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={`text-sm font-bold ${seg.highlight ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                                        Segment {seg.id}
+                                                                    </span>
+                                                                    <span className="text-xs text-slate-500 dark:text-slate-400">({seg.label})</span>
+                                                                </div>
+                                                                <span className="text-sm font-bold text-slate-900 dark:text-white">{seg.health.toFixed(1)}%</span>
+                                                            </div>
+                                                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                                                                <div
+                                                                    className={`h-full rounded-full ${barColor}`}
+                                                                    style={{ width: `${Math.min(100, seg.health)}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+
+                                                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                                                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                                                        <span className="font-semibold">⚠ Insight:</span> This segment ranks {ordinal(rank)} out of {comparisonList.length} segments.
+                                                        {rank === 4 ? ' Immediate attention required.' : rank === 1 ? ' Performing optimally.' : ' Monitor closely.'}
+                                                    </p>
                                                 </div>
-                                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                                                    <div
-                                                        className={`h-full rounded-full ${barColor}`}
-                                                        style={{ width: `${seg.health}%` }}
-                                                    />
-                                                </div>
-                                            </div>
+                                            </>
                                         );
-                                    })}
-                                </div>
-                                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                                    <p className="text-sm text-amber-800 dark:text-amber-200">
-                                        <span className="font-semibold">⚠ Insight:</span> This segment ranks {reportData.score < 50 ? '4th (worst)' : reportData.score < 80 ? '3rd' : '2nd'} out of 4 segments. {reportData.score < 60 ? 'Immediate attention required.' : 'Monitor closely.'}
-                                    </p>
+                                    })()}
                                 </div>
                             </div>
 
