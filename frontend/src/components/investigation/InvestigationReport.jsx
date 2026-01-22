@@ -791,12 +791,12 @@ export default function InvestigationReport({ isOpen, onClose, reportData, segme
                                 </h4>
                                 <div className="space-y-3">
                                     {[
-                                        { period: '6 Months Ago', score: Math.min(100, Math.max(95, reportData.score * 1.25)), date: 'Jul 2025' },
-                                        { period: '5 Months Ago', score: Math.min(100, Math.max(93, reportData.score * 1.20)), date: 'Aug 2025' },
-                                        { period: '4 Months Ago', score: Math.min(100, Math.max(91, reportData.score * 1.15)), date: 'Sep 2025' },
-                                        { period: '3 Months Ago', score: Math.min(100, Math.max(89, reportData.score * 1.10)), date: 'Oct 2025' },
-                                        { period: '2 Months Ago', score: Math.min(100, Math.max(87, reportData.score * 1.05)), date: 'Nov 2025' },
-                                        { period: '1 Month Ago', score: Math.min(100, Math.max(85, reportData.score * 1.02)), date: 'Dec 2025' },
+                                        { period: '6 Months Ago', score: 95, date: 'Jul 2025' },
+                                        { period: '5 Months Ago', score: 93, date: 'Aug 2025' },
+                                        { period: '4 Months Ago', score: 91, date: 'Sep 2025' },
+                                        { period: '3 Months Ago', score: 89, date: 'Oct 2025' },
+                                        { period: '2 Months Ago', score: Math.max(85, reportData.score + 20), date: 'Nov 2025' },
+                                        { period: '1 Month Ago', score: Math.max(75, reportData.score + 10), date: 'Dec 2025' },
                                         { period: 'Current', score: reportData.score, date: 'Jan 2026', highlight: true }
                                     ].map((item, idx) => {
                                         const barColor = item.score > 80 ? 'bg-emerald-500' : item.score > 60 ? 'bg-amber-500' : 'bg-rose-500';
