@@ -114,6 +114,23 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         print("Client disconnected")
 
+# --- Legacy / Compatibility Shims (Fixes 404s & connection fallbacks) ---
+
+@app.get("/leak/model")
+async def compat_model():
+    """Shim for legacy Dashboard metrics"""
+    return sim_manager.get_latest_health()
+
+@app.get("/leak/stats")
+async def compat_stats():
+    """Shim for legacy Stats calls"""
+    return sim_manager.get_current_state()
+
+@app.post("/leak/stream")
+async def compat_stream_fallback():
+    """HTTP Fallback for devices where WebSocket is blocked"""
+    return sim_manager.get_current_state()
+
 if __name__ == "__main__":
     import uvicorn
     # Use PORT env variable provided by Railway/Heroku, default to 8000 for local dev

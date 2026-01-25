@@ -40,16 +40,23 @@ export const SensorProvider = ({ children }) => {
 
     // 2. WEBSOCKET (Backend Connection)
     // PURPOSE: Only for Health Scores & Models (REAL DATA)
+    // 2. CONNECTION MANAGER (Hybrid: WebSocket -> Fallback to HTTP Polling)
     useEffect(() => {
+        let pollInterval;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+
         const connect = () => {
             setConnectionStatus('connecting');
-            const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
-            const socket = new WebSocket(`${wsUrl}/ws`);
+
+            // PRODUCTION URL DEFAULT (Fix for Preview/Dev environments)
+            const wsBase = import.meta.env.VITE_WS_URL || 'wss://madrepo-production.up.railway.app';
+            const socket = new WebSocket(`${wsBase}/ws`);
 
             socket.onopen = () => {
-                console.log('Connected to P-Health Backend (Model Stream)');
+                console.log('Connected to P-Health Backend (WS Mode)');
                 setConnectionStatus('connected');
-                // setIsLive(true); // Don't override user control
+                retryCount = 0; // Reset retries on success
             };
 
             socket.onmessage = (event) => {
@@ -57,20 +64,53 @@ export const SensorProvider = ({ children }) => {
                     const data = JSON.parse(event.data);
                     handleBackendUpdate(data);
                 } catch (e) {
-                    console.error('WS Error:', e);
+                    console.error('WS Data Error:', e);
                 }
             };
 
             socket.onclose = () => {
                 console.log('WS Disconnected');
                 setConnectionStatus('disconnected');
-                // setIsLive(false); // Don't stop simulation on disconnect
-                setTimeout(connect, 3000);
+
+                // If WS fails too many times, switch to HTTP Polling
+                if (retryCount >= MAX_RETRIES) {
+                    console.warn('WebSocket blocked/failed. Switching to HTTP Polling Mode.');
+                    startPolling();
+                } else {
+                    retryCount++;
+                    setTimeout(connect, 3000);
+                }
             };
             ws.current = socket;
         };
+
+        const startPolling = () => {
+            // Stop any existing poll to avoid duplicates
+            if (pollInterval) clearInterval(pollInterval);
+
+            setConnectionStatus('connected (polling)');
+            const apiBase = import.meta.env.VITE_API_URL || 'https://madrepo-production.up.railway.app';
+
+            // Poll every 2 seconds
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${apiBase}/leak/stream`, { method: 'POST' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        handleBackendUpdate(data);
+                    }
+                } catch (e) {
+                    console.error('Polling Error:', e);
+                }
+            }, 2000);
+        };
+
         connect();
-        return () => { if (ws.current) ws.current.close(); };
+
+        return () => {
+            if (ws.current) ws.current.close();
+            if (pollInterval) clearInterval(pollInterval);
+        };
     }, []);
 
     // 3. HANDLE REAL BACKEND DATA (Health Only)
