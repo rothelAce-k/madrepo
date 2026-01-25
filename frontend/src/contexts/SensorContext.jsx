@@ -94,7 +94,7 @@ export const SensorProvider = ({ children }) => {
             // Poll every 2 seconds
             pollInterval = setInterval(async () => {
                 try {
-                    const res = await fetch(`${apiBase}/leak/stream`, { method: 'POST' });
+                    const res = await fetch(`${apiBase}/leak/stream`);
                     if (res.ok) {
                         const data = await res.json();
                         handleBackendUpdate(data);
